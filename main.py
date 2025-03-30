@@ -108,3 +108,34 @@ def key_expansion(key):
     # Flatten into round keys
     round_keys = [sum(w[4*i:4*i+4], []) for i in range(11)]  # 11 round keys
     return round_keys
+
+def aes_encrypt_block(plaintext, key):
+    """
+    Encrypt a 16-byte plaintext block using AES-128.
+    plaintext: list of 16 bytes
+    key: 16-byte key (bytes or list of ints)
+    Returns encrypted 16-byte block
+    """
+    assert len(plaintext) == 16
+    assert len(key) == 16
+
+    round_keys = key_expansion(key)
+
+    state = list(plaintext)
+
+    # Initial round
+    state = add_round_key(state, round_keys[0])
+
+    # Rounds 1-9
+    for round_num in range(1, 10):
+        state = sub_bytes(state)
+        state = shift_rows(state)
+        state = mix_columns(state)
+        state = add_round_key(state, round_keys[round_num])
+
+    # Final round (no MixColumns)
+    state = sub_bytes(state)
+    state = shift_rows(state)
+    state = add_round_key(state, round_keys[10])
+
+    return state
