@@ -14,9 +14,10 @@ cipher = AESCipher(key)
 
 # Test strings
 test_strings = [
-    "hello world",
-    "AES is cool!",
-    "this is a longer message that spans multiple blocks."
+    "Pony Up!",
+    "Veritas liberabit vos",
+    "Subliminal message to give me an 'A'",
+    # Add or modify strings as needed
 ]
 
 for idx, message in enumerate(test_strings, 1):
