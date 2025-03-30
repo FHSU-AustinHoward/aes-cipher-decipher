@@ -153,3 +153,16 @@ for i, val in enumerate(s_box):
 def inv_sub_bytes(state):
     return [inv_s_box[b] for b in state]
 
+def inv_mix_columns(state):
+    result = []
+    for col in range(4):
+        i = col * 4
+        a = state[i:i+4]
+
+        r0 = gmul(a[0], 0x0e) ^ gmul(a[1], 0x0b) ^ gmul(a[2], 0x0d) ^ gmul(a[3], 0x09)
+        r1 = gmul(a[0], 0x09) ^ gmul(a[1], 0x0e) ^ gmul(a[2], 0x0b) ^ gmul(a[3], 0x0d)
+        r2 = gmul(a[0], 0x0d) ^ gmul(a[1], 0x09) ^ gmul(a[2], 0x0e) ^ gmul(a[3], 0x0b)
+        r3 = gmul(a[0], 0x0b) ^ gmul(a[1], 0x0d) ^ gmul(a[2], 0x09) ^ gmul(a[3], 0x0e)
+
+        result += [r0, r1, r2, r3]
+    return result
