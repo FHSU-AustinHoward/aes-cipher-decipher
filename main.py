@@ -39,3 +39,30 @@ def shift_rows(state):
     result = [matrix[i][j] for j in range(4) for i in range(4)]
     return result
 
+def gmul(a, b):
+    """Multiply two bytes in GF(2^8)"""
+    p = 0
+    for _ in range(8):
+        if b & 1:
+            p ^= a
+        carry = a & 0x80
+        a = (a << 1) & 0xFF
+        if carry:
+            a ^= 0x1b  # irreducible polynomial for AES
+        b >>= 1
+    return p
+
+def mix_columns(state):
+    """Apply MixColumns transformation to the state (list of 16 bytes)"""
+    result = []
+    for col in range(4):
+        i = col * 4
+        a = state[i:i+4]  # one column (4 bytes)
+
+        r0 = gmul(a[0], 2) ^ gmul(a[1], 3) ^ a[2] ^ a[3]
+        r1 = a[0] ^ gmul(a[1], 2) ^ gmul(a[2], 3) ^ a[3]
+        r2 = a[0] ^ a[1] ^ gmul(a[2], 2) ^ gmul(a[3], 3)
+        r3 = gmul(a[0], 3) ^ a[1] ^ a[2] ^ gmul(a[3], 2)
+
+        result += [r0, r1, r2, r3]
+    return result
