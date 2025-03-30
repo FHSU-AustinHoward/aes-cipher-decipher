@@ -166,3 +166,33 @@ def inv_mix_columns(state):
 
         result += [r0, r1, r2, r3]
     return result
+
+def aes_decrypt_block(ciphertext, key):
+    """
+    Decrypt a 16-byte AES-128 ciphertext block.
+    ciphertext: list of 16 bytes
+    key: 16-byte key (bytes or list of ints)
+    Returns decrypted 16-byte block
+    """
+    assert len(ciphertext) == 16
+    assert len(key) == 16
+
+    round_keys = key_expansion(key)
+    state = list(ciphertext)
+
+    # Initial AddRoundKey with last round key
+    state = add_round_key(state, round_keys[10])
+
+    # Rounds 1–9 (in reverse order)
+    for round_num in range(9, 0, -1):
+        state = inv_shift_rows(state)
+        state = inv_sub_bytes(state)
+        state = add_round_key(state, round_keys[round_num])
+        state = inv_mix_columns(state)
+
+    # Final round
+    state = inv_shift_rows(state)
+    state = inv_sub_bytes(state)
+    state = add_round_key(state, round_keys[0])
+
+    return state
