@@ -1,3 +1,5 @@
+
+
 # AES S-Box (source: standard AES specification)
 s_box = [
     # 0     1      2      3     4     5     6     7     8     9     A     B     C     D     E     F
@@ -18,6 +20,10 @@ s_box = [
     0xe1, 0xf8, 0x98, 0x11, 0x69, 0xd9, 0x8e, 0x94, 0x9b, 0x1e, 0x87, 0xe9, 0xce, 0x55, 0x28, 0xdf,
     0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16,
 ]
+
+inv_s_box = [0] * 256
+for i, val in enumerate(s_box):
+    inv_s_box[val] = i
 
 # Function to apply S-box substitution to all 16 bytes in a block
 def sub_bytes(state):
@@ -146,10 +152,6 @@ def inv_shift_rows(state):
         matrix[i] = matrix[i][-i:] + matrix[i][:-i]
     return [matrix[i][j] for j in range(4) for i in range(4)]
 
-inv_s_box = [0] * 256
-for i, val in enumerate(s_box):
-    inv_s_box[val] = i
-
 def inv_sub_bytes(state):
     return [inv_s_box[b] for b in state]
 
@@ -216,7 +218,6 @@ def blocks_to_string(blocks):
         data.extend(block)
     return bytes(data).rstrip(b'\x00').decode('utf-8', errors='ignore')
 
-
 if __name__ == "__main__":
     key = [0x2b, 0x7e, 0x15, 0x16,
            0x28, 0xae, 0xd2, 0xa6,
@@ -247,4 +248,3 @@ if __name__ == "__main__":
     # Blocks to string
     recovered = blocks_to_string(decrypted_blocks)
     print("\nRecovered Message:", recovered)
-
