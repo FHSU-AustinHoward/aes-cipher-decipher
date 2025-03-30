@@ -11,6 +11,8 @@
 #   It includes utilities to convert strings into 16-byte blocks and test the system
 #   using hardcoded demo strings. No external libraries are used for encryption.
 
+
+# AES S-Box and inverse S-Box
 s_box = [
     # 0     1      2      3     4     5     6     7     8     9     A     B     C     D     E     F
     0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
@@ -31,16 +33,17 @@ s_box = [
     0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16,
 ]
 
+# Generate inverse S-box from S-box
 inv_s_box = [0] * 256
 for i, val in enumerate(s_box):
     inv_s_box[val] = i
 
-
+# SubBytes transformation
 def sub_bytes(state):
     return [s_box[b] for b in state]
 
+# ShiftRows transformation
 def shift_rows(state):
-
     matrix = [state[i::4] for i in range(4)]
 
     for i in range(4):
@@ -49,9 +52,11 @@ def shift_rows(state):
     result = [matrix[i][j] for j in range(4) for i in range(4)]
     return result
 
+# Galois Field multiplication
 def gmul(a, b):
     p = 0
     for _ in range(8):
+
         if b & 1:
             p ^= a
         carry = a & 0x80
@@ -59,10 +64,13 @@ def gmul(a, b):
         if carry:
             a ^= 0x1b
         b >>= 1
+
     return p
 
+# MixColumns transformation
 def mix_columns(state):
     result = []
+
     for col in range(4):
         i = col * 4
         a = state[i:i+4]
@@ -74,9 +82,11 @@ def mix_columns(state):
         result += [r0, r1, r2, r3]
     return result
 
+# AddRoundKey transformation
 def add_round_key(state, round_key):
     return [b ^ k for b, k in zip(state, round_key)]
 
+# Rcon values for key expansion
 r_con = [
     [0x01, 0x00, 0x00, 0x00],
     [0x02, 0x00, 0x00, 0x00],
@@ -90,15 +100,19 @@ r_con = [
     [0x36, 0x00, 0x00, 0x00],
 ]
 
+# Rotate word for key schedule
 def rot_word(word):
     return word[1:] + word[:1]
 
+# SubWord for key expansion
 def sub_word(word):
     return [s_box[b] for b in word]
 
+# XOR two 4-byte words
 def xor_words(a, b):
     return [i ^ j for i, j in zip(a, b)]
 
+# Key expansion for AES-128
 def key_expansion(key):
     key_symbols = list(key)
     assert len(key_symbols) == 16
@@ -114,15 +128,14 @@ def key_expansion(key):
     round_keys = [sum(w[4*i:4*i+4], []) for i in range(11)]
     return round_keys
 
+# AES encryption of a single 16-byte block
 def aes_encrypt_block(plaintext, key):
 
     assert len(plaintext) == 16
     assert len(key) == 16
 
     round_keys = key_expansion(key)
-
     state = list(plaintext)
-
     state = add_round_key(state, round_keys[0])
 
     for round_num in range(1, 10):
@@ -137,15 +150,18 @@ def aes_encrypt_block(plaintext, key):
 
     return state
 
+# Inverse ShiftRows
 def inv_shift_rows(state):
     matrix = [state[i::4] for i in range(4)]
     for i in range(4):
         matrix[i] = matrix[i][-i:] + matrix[i][:-i]
     return [matrix[i][j] for j in range(4) for i in range(4)]
 
+# Inverse SubBytes
 def inv_sub_bytes(state):
     return [inv_s_box[b] for b in state]
 
+# Inverse MixColumns
 def inv_mix_columns(state):
     result = []
     for col in range(4):
@@ -160,6 +176,7 @@ def inv_mix_columns(state):
         result += [r0, r1, r2, r3]
     return result
 
+# AES decryption of a single 16-byte block
 def aes_decrypt_block(ciphertext, key):
 
     assert len(ciphertext) == 16
@@ -167,7 +184,6 @@ def aes_decrypt_block(ciphertext, key):
 
     round_keys = key_expansion(key)
     state = list(ciphertext)
-
     state = add_round_key(state, round_keys[10])
 
     for round_num in range(9, 0, -1):
@@ -182,6 +198,7 @@ def aes_decrypt_block(ciphertext, key):
 
     return state
 
+# Convert UTF-8 string to 16-byte blocks
 def string_to_blocks(s, block_size=16):
     data = list(s.encode('utf-8'))
     blocks = []
@@ -192,34 +209,38 @@ def string_to_blocks(s, block_size=16):
         blocks.append(block)
     return blocks
 
+# Convert 16-byte blocks back to UTF-8 string
 def blocks_to_string(blocks):
     data = []
     for block in blocks:
         data.extend(block)
     return bytes(data).rstrip(b'\x00').decode('utf-8', errors='ignore')
 
+# Print a list of 16-byte blocks in aligned rows
+def print_blocks(label, blocks):
+    if not blocks:
+        return
+    prefix = f"{label}: "
+    for i, block in enumerate(blocks):
+        block_str = ' '.join(f"{byte:02x}" for byte in block)
+        if i == 0:
+            print(f"{prefix}{block_str}")
+        else:
+            print(f"{' ' * len(prefix)}{block_str}")
+
+# Demo test using fixed key and plaintext strings
 if __name__ == "__main__":
     test_strings = [
         "hello world",
         "AES is cool!",
         "this is a longer message that spans multiple blocks.",
+        # Add to or modify this list as you see fit
     ]
 
     key = [0x2b, 0x7e, 0x15, 0x16,
            0x28, 0xae, 0xd2, 0xa6,
            0xab, 0xf7, 0x15, 0x88,
            0x09, 0xcf, 0x4f, 0x3c]
-
-    def print_blocks(label, blocks):
-        if not blocks:
-            return
-        prefix = f"{label}: "
-        for i, block in enumerate(blocks):
-            block_str = ' '.join(f"{byte:02x}" for byte in block)
-            if i == 0:
-                print(f"{prefix}{block_str}")
-            else:
-                print(f"{' ' * len(prefix)}{block_str}")
 
     for idx, message in enumerate(test_strings, 1):
         print(f"=== AES DEMO: String #{idx} ===")
