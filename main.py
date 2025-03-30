@@ -219,32 +219,33 @@ def blocks_to_string(blocks):
     return bytes(data).rstrip(b'\x00').decode('utf-8', errors='ignore')
 
 if __name__ == "__main__":
+    # 🔧 Demo strings to encrypt — feel free to modify or add to this list
+    test_strings = [
+        "hello world",
+        "AES is cool!",
+        "this is a longer message that spans multiple blocks."
+    ]
+
+    # 🔐 Test key from FIPS-197 Appendix B
     key = [0x2b, 0x7e, 0x15, 0x16,
            0x28, 0xae, 0xd2, 0xa6,
            0xab, 0xf7, 0x15, 0x88,
            0x09, 0xcf, 0x4f, 0x3c]
 
-    message = "hello world"
-    print("Original Message:", message)
+    print("=== AES DEMO ===\n")
+    for idx, message in enumerate(test_strings, 1):
+        print(f"--- Test {idx} ---")
+        print("Original:", message)
 
-    # String to blocks
-    blocks = string_to_blocks(message)
-    print("\nPlaintext Blocks:")
-    for b in blocks:
-        print([hex(byte) for byte in b])
+        blocks = string_to_blocks(message)
+        encrypted = [aes_encrypt_block(b, key) for b in blocks]
+        decrypted = [aes_decrypt_block(b, key) for b in encrypted]
+        recovered = blocks_to_string(decrypted)
 
-    # Encrypt each block
-    encrypted_blocks = [aes_encrypt_block(block, key) for block in blocks]
-    print("\nEncrypted Blocks:")
-    for b in encrypted_blocks:
-        print([hex(byte) for byte in b])
+        # Compact hex view per block
+        print("Encrypted Blocks:")
+        for b in encrypted:
+            print(' '.join(f"{byte:02x}" for byte in b))
 
-    # Decrypt each block
-    decrypted_blocks = [aes_decrypt_block(block, key) for block in encrypted_blocks]
-    print("\nDecrypted Blocks:")
-    for b in decrypted_blocks:
-        print([hex(byte) for byte in b])
-
-    # Blocks to string
-    recovered = blocks_to_string(decrypted_blocks)
-    print("\nRecovered Message:", recovered)
+        print("Decrypted:", recovered)
+        print("Match" if message == recovered else "Mismatch", "\n")
