@@ -242,13 +242,22 @@ if __name__ == "__main__":
             else:
                 print(f"{' ' * len(prefix)}{block_str}")
 
-    #print("=== AES DEMO ===\n")
     for idx, message in enumerate(test_strings, 1):
         print(f"=== AES DEMO: String #{idx} ===")
         print("Original:", message)
 
         blocks = string_to_blocks(message)
         encrypted = [aes_encrypt_block(b, key) for b in blocks]
+
+        # Flatten encrypted blocks into raw byte string
+        encrypted_bytes = bytes(sum(encrypted, []))  # list of ints → bytes
+
+        # Write raw encrypted bytes to a file for this test case
+        filename = f"aes_raw_output{idx}.bin"
+        with open(filename, "wb") as f:
+            f.write(encrypted_bytes)
+        print(f"Raw encrypted bytes written to {filename}")
+
         decrypted = [aes_decrypt_block(b, key) for b in encrypted]
         recovered = blocks_to_string(decrypted)
 
