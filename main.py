@@ -139,3 +139,9 @@ def aes_encrypt_block(plaintext, key):
     state = add_round_key(state, round_keys[10])
 
     return state
+
+def inv_shift_rows(state):
+    matrix = [state[i::4] for i in range(4)]
+    for i in range(4):
+        matrix[i] = matrix[i][-i:] + matrix[i][:-i]
+    return [matrix[i][j] for j in range(4) for i in range(4)]
