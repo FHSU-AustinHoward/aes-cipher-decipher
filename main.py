@@ -66,3 +66,45 @@ def mix_columns(state):
 
         result += [r0, r1, r2, r3]
     return result
+
+def add_round_key(state, round_key):
+    return [b ^ k for b, k in zip(state, round_key)]
+
+# Rcon for key expansion (first 10 values, 4 bytes each)
+r_con = [
+    [0x01, 0x00, 0x00, 0x00],
+    [0x02, 0x00, 0x00, 0x00],
+    [0x04, 0x00, 0x00, 0x00],
+    [0x08, 0x00, 0x00, 0x00],
+    [0x10, 0x00, 0x00, 0x00],
+    [0x20, 0x00, 0x00, 0x00],
+    [0x40, 0x00, 0x00, 0x00],
+    [0x80, 0x00, 0x00, 0x00],
+    [0x1B, 0x00, 0x00, 0x00],
+    [0x36, 0x00, 0x00, 0x00],
+]
+
+def rot_word(word):
+    return word[1:] + word[:1]
+
+def sub_word(word):
+    return [s_box[b] for b in word]
+
+def xor_words(a, b):
+    return [i ^ j for i, j in zip(a, b)]
+
+def key_expansion(key):
+    key_symbols = list(key)  # 16 bytes
+    assert len(key_symbols) == 16
+
+    w = [key_symbols[i:i+4] for i in range(0, 16, 4)]  # 4 initial words
+
+    for i in range(4, 44):  # Need 44 words
+        temp = w[i - 1].copy()
+        if i % 4 == 0:
+            temp = xor_words(sub_word(rot_word(temp)), r_con[i // 4 - 1])
+        w.append(xor_words(w[i - 4], temp))
+
+    # Flatten into round keys
+    round_keys = [sum(w[4*i:4*i+4], []) for i in range(11)]  # 11 round keys
+    return round_keys
