@@ -197,22 +197,54 @@ def aes_decrypt_block(ciphertext, key):
 
     return state
 
-if __name__ == "__main__":
-    # Example from FIPS-197 Appendix B
-    plaintext = [0x32, 0x43, 0xf6, 0xa8,
-                 0x88, 0x5a, 0x30, 0x8d,
-                 0x31, 0x31, 0x98, 0xa2,
-                 0xe0, 0x37, 0x07, 0x34]
+def string_to_blocks(s, block_size=16):
+    """Convert a string into a list of 16-byte blocks (as lists of ints) with zero padding."""
+    data = list(s.encode('utf-8'))  # convert to byte list
+    blocks = []
+    for i in range(0, len(data), block_size):
+        block = data[i:i+block_size]
+        # Zero pad to full block size
+        if len(block) < block_size:
+            block += [0x00] * (block_size - len(block))
+        blocks.append(block)
+    return blocks
 
+def blocks_to_string(blocks):
+    """Convert a list of 16-byte blocks (list of int lists) into a string, stripping nulls."""
+    data = []
+    for block in blocks:
+        data.extend(block)
+    return bytes(data).rstrip(b'\x00').decode('utf-8', errors='ignore')
+
+
+if __name__ == "__main__":
     key = [0x2b, 0x7e, 0x15, 0x16,
            0x28, 0xae, 0xd2, 0xa6,
            0xab, 0xf7, 0x15, 0x88,
            0x09, 0xcf, 0x4f, 0x3c]
 
-    cipher = aes_encrypt_block(plaintext, key)
-    recovered = aes_decrypt_block(cipher, key)
+    message = "hello world"
+    print("Original Message:", message)
 
-    print("Plaintext: ", [hex(b) for b in plaintext])
-    print("Encrypted:", [hex(b) for b in cipher])
-    print("Decrypted:", [hex(b) for b in recovered])
-    print("Match:", plaintext == recovered)
+    # String to blocks
+    blocks = string_to_blocks(message)
+    print("\nPlaintext Blocks:")
+    for b in blocks:
+        print([hex(byte) for byte in b])
+
+    # Encrypt each block
+    encrypted_blocks = [aes_encrypt_block(block, key) for block in blocks]
+    print("\nEncrypted Blocks:")
+    for b in encrypted_blocks:
+        print([hex(byte) for byte in b])
+
+    # Decrypt each block
+    decrypted_blocks = [aes_decrypt_block(block, key) for block in encrypted_blocks]
+    print("\nDecrypted Blocks:")
+    for b in decrypted_blocks:
+        print([hex(byte) for byte in b])
+
+    # Blocks to string
+    recovered = blocks_to_string(decrypted_blocks)
+    print("\nRecovered Message:", recovered)
+
