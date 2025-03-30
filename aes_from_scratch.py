@@ -1,3 +1,16 @@
+# aes_from_scratch.py
+#
+# Author: Austin Howard
+# Date: April 27, 2025
+# Professor: Dr. Chen Wang
+# Course: CS7349 - Data and Network Security (Spring 2025)
+#
+# Description:
+#   This file implements AES-128 encryption and decryption from scratch in Python,
+#   including key expansion, SubBytes, ShiftRows, MixColumns, and AddRoundKey.
+#   It includes utilities to convert strings into 16-byte blocks and test the system
+#   using hardcoded demo strings. No external libraries are used for encryption.
+
 s_box = [
     # 0     1      2      3     4     5     6     7     8     9     A     B     C     D     E     F
     0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
