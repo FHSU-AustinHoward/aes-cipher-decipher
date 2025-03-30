@@ -22,3 +22,20 @@ s_box = [
 # Function to apply S-box substitution to all 16 bytes in a block
 def sub_bytes(state):
     return [s_box[b] for b in state]
+
+def shift_rows(state):
+    """
+    Input: state is a list of 16 bytes in column-major order
+    Output: shifted list of 16 bytes
+    """
+    # Convert flat list to 4x4 matrix (column-major)
+    matrix = [state[i::4] for i in range(4)]  # transpose to row-major
+
+    # Perform left circular shift on each row
+    for i in range(4):
+        matrix[i] = matrix[i][i:] + matrix[i][:i]
+
+    # Flatten back to column-major order
+    result = [matrix[i][j] for j in range(4) for i in range(4)]
+    return result
+
