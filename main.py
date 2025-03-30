@@ -145,3 +145,11 @@ def inv_shift_rows(state):
     for i in range(4):
         matrix[i] = matrix[i][-i:] + matrix[i][:-i]
     return [matrix[i][j] for j in range(4) for i in range(4)]
+
+inv_s_box = [0] * 256
+for i, val in enumerate(s_box):
+    inv_s_box[val] = i
+
+def inv_sub_bytes(state):
+    return [inv_s_box[b] for b in state]
+
