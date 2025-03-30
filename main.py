@@ -1,6 +1,3 @@
-
-
-# AES S-Box (source: standard AES specification)
 s_box = [
     # 0     1      2      3     4     5     6     7     8     9     A     B     C     D     E     F
     0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
@@ -25,28 +22,21 @@ inv_s_box = [0] * 256
 for i, val in enumerate(s_box):
     inv_s_box[val] = i
 
-# Function to apply S-box substitution to all 16 bytes in a block
+
 def sub_bytes(state):
     return [s_box[b] for b in state]
 
 def shift_rows(state):
-    """
-    Input: state is a list of 16 bytes in column-major order
-    Output: shifted list of 16 bytes
-    """
-    # Convert flat list to 4x4 matrix (column-major)
-    matrix = [state[i::4] for i in range(4)]  # transpose to row-major
 
-    # Perform left circular shift on each row
+    matrix = [state[i::4] for i in range(4)]
+
     for i in range(4):
         matrix[i] = matrix[i][i:] + matrix[i][:i]
 
-    # Flatten back to column-major order
     result = [matrix[i][j] for j in range(4) for i in range(4)]
     return result
 
 def gmul(a, b):
-    """Multiply two bytes in GF(2^8)"""
     p = 0
     for _ in range(8):
         if b & 1:
@@ -54,17 +44,15 @@ def gmul(a, b):
         carry = a & 0x80
         a = (a << 1) & 0xFF
         if carry:
-            a ^= 0x1b  # irreducible polynomial for AES
+            a ^= 0x1b
         b >>= 1
     return p
 
 def mix_columns(state):
-    """Apply MixColumns transformation to the state (list of 16 bytes)"""
     result = []
     for col in range(4):
         i = col * 4
-        a = state[i:i+4]  # one column (4 bytes)
-
+        a = state[i:i+4]
         r0 = gmul(a[0], 2) ^ gmul(a[1], 3) ^ a[2] ^ a[3]
         r1 = a[0] ^ gmul(a[1], 2) ^ gmul(a[2], 3) ^ a[3]
         r2 = a[0] ^ a[1] ^ gmul(a[2], 2) ^ gmul(a[3], 3)
@@ -76,7 +64,6 @@ def mix_columns(state):
 def add_round_key(state, round_key):
     return [b ^ k for b, k in zip(state, round_key)]
 
-# Rcon for key expansion (first 10 values, 4 bytes each)
 r_con = [
     [0x01, 0x00, 0x00, 0x00],
     [0x02, 0x00, 0x00, 0x00],
@@ -100,28 +87,22 @@ def xor_words(a, b):
     return [i ^ j for i, j in zip(a, b)]
 
 def key_expansion(key):
-    key_symbols = list(key)  # 16 bytes
+    key_symbols = list(key)
     assert len(key_symbols) == 16
 
-    w = [key_symbols[i:i+4] for i in range(0, 16, 4)]  # 4 initial words
+    w = [key_symbols[i:i+4] for i in range(0, 16, 4)]
 
-    for i in range(4, 44):  # Need 44 words
+    for i in range(4, 44):
         temp = w[i - 1].copy()
         if i % 4 == 0:
             temp = xor_words(sub_word(rot_word(temp)), r_con[i // 4 - 1])
         w.append(xor_words(w[i - 4], temp))
 
-    # Flatten into round keys
-    round_keys = [sum(w[4*i:4*i+4], []) for i in range(11)]  # 11 round keys
+    round_keys = [sum(w[4*i:4*i+4], []) for i in range(11)]
     return round_keys
 
 def aes_encrypt_block(plaintext, key):
-    """
-    Encrypt a 16-byte plaintext block using AES-128.
-    plaintext: list of 16 bytes
-    key: 16-byte key (bytes or list of ints)
-    Returns encrypted 16-byte block
-    """
+
     assert len(plaintext) == 16
     assert len(key) == 16
 
@@ -129,17 +110,14 @@ def aes_encrypt_block(plaintext, key):
 
     state = list(plaintext)
 
-    # Initial round
     state = add_round_key(state, round_keys[0])
 
-    # Rounds 1-9
     for round_num in range(1, 10):
         state = sub_bytes(state)
         state = shift_rows(state)
         state = mix_columns(state)
         state = add_round_key(state, round_keys[round_num])
 
-    # Final round (no MixColumns)
     state = sub_bytes(state)
     state = shift_rows(state)
     state = add_round_key(state, round_keys[10])
@@ -170,29 +148,21 @@ def inv_mix_columns(state):
     return result
 
 def aes_decrypt_block(ciphertext, key):
-    """
-    Decrypt a 16-byte AES-128 ciphertext block.
-    ciphertext: list of 16 bytes
-    key: 16-byte key (bytes or list of ints)
-    Returns decrypted 16-byte block
-    """
+
     assert len(ciphertext) == 16
     assert len(key) == 16
 
     round_keys = key_expansion(key)
     state = list(ciphertext)
 
-    # Initial AddRoundKey with last round key
     state = add_round_key(state, round_keys[10])
 
-    # Rounds 1–9 (in reverse order)
     for round_num in range(9, 0, -1):
         state = inv_shift_rows(state)
         state = inv_sub_bytes(state)
         state = add_round_key(state, round_keys[round_num])
         state = inv_mix_columns(state)
 
-    # Final round
     state = inv_shift_rows(state)
     state = inv_sub_bytes(state)
     state = add_round_key(state, round_keys[0])
@@ -200,19 +170,16 @@ def aes_decrypt_block(ciphertext, key):
     return state
 
 def string_to_blocks(s, block_size=16):
-    """Convert a string into a list of 16-byte blocks (as lists of ints) with zero padding."""
-    data = list(s.encode('utf-8'))  # convert to byte list
+    data = list(s.encode('utf-8'))
     blocks = []
     for i in range(0, len(data), block_size):
         block = data[i:i+block_size]
-        # Zero pad to full block size
         if len(block) < block_size:
             block += [0x00] * (block_size - len(block))
         blocks.append(block)
     return blocks
 
 def blocks_to_string(blocks):
-    """Convert a list of 16-byte blocks (list of int lists) into a string, stripping nulls."""
     data = []
     for block in blocks:
         data.extend(block)
@@ -223,7 +190,6 @@ if __name__ == "__main__":
         "hello world",
         "AES is cool!",
         "this is a longer message that spans multiple blocks.",
-        # Add more test strings or modify the list as needed
     ]
 
     key = [0x2b, 0x7e, 0x15, 0x16,
@@ -244,15 +210,11 @@ if __name__ == "__main__":
 
     for idx, message in enumerate(test_strings, 1):
         print(f"=== AES DEMO: String #{idx} ===")
-        print("Original:", message)
+        print("Original String:", message)
 
         blocks = string_to_blocks(message)
         encrypted = [aes_encrypt_block(b, key) for b in blocks]
-
-        # Flatten encrypted blocks into raw byte string
-        encrypted_bytes = bytes(sum(encrypted, []))  # list of ints → bytes
-
-        # Write raw encrypted bytes to a file for this test case
+        encrypted_bytes = bytes(sum(encrypted, []))
         filename = f"aes_raw_output{idx}.bin"
         with open(filename, "wb") as f:
             f.write(encrypted_bytes)
