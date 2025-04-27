@@ -1,4 +1,4 @@
-# utils.py
+# aes_utils.py
 #
 # Helper functions for AES block operations and printing.
 

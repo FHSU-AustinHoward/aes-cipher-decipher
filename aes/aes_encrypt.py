@@ -1,9 +1,9 @@
-# encrypt.py
+# aes_encrypt.py
 #
 # Encrypts plaintext strings using AES-128
 
 from aes_cipher import AESCipher
-from utils import string_to_blocks, print_blocks
+from aes_utils import string_to_blocks, print_blocks
 
 # Sample key (same as FIPS example)
 key = [0x2b, 0x7e, 0x15, 0x16,

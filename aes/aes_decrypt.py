@@ -1,9 +1,9 @@
-# decrypt.py
+# aes_decrypt.py
 #
 # Decrypts AES-128 ciphertext back into plaintext
 
 from aes_cipher import AESCipher
-from utils import blocks_to_string, print_blocks
+from aes_utils import blocks_to_string, print_blocks
 
 # Sample key (same one used in encryption)
 key = [0x2b, 0x7e, 0x15, 0x16,

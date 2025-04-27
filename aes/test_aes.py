@@ -3,7 +3,7 @@
 # Demonstration to validate AES encryption/decryption functionality
 
 from aes_cipher import AESCipher
-from utils import string_to_blocks, blocks_to_string, print_blocks
+from aes_utils import string_to_blocks, blocks_to_string, print_blocks
 
 key = [0x2b, 0x7e, 0x15, 0x16,
        0x28, 0xae, 0xd2, 0xa6,
