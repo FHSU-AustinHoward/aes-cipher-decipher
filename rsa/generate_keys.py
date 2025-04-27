@@ -1,4 +1,4 @@
-# rsa_keygen.py
+# generate_keys.py
 #
 # Generates RSA public/private key pairs
 # Uses the 10th and 19th primes between 1000–10000 as p and q

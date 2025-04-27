@@ -1,6 +1,9 @@
-# rsa_crypto.py
+# rsa_test.py
 #
 # Encrypts and decrypts the message "rsa" using RSA.
+#
+# Author: Austin Howard
+# Date: April 27, 2025
 
 # Primality check
 import math
