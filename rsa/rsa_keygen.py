@@ -3,14 +3,51 @@
 # Generates RSA public/private key pairs
 # Uses the 10th and 19th primes between 1000–10000 as p and q
 
-from rsa_utils import is_prime, get_nth_prime_in_range, modinv
+import math
+
+# Primality check
+def is_prime(n):
+    if n < 2:
+        return False
+    if n == 2:
+        return True
+    if n % 2 == 0:
+        return False
+    for i in range(3, int(math.sqrt(n)) + 1, 2):
+        if n % i == 0:
+            return False
+    return True
+
+# Get nth prime in range
+def get_nth_prime_in_range(start, end, n):
+    count = 0
+    for i in range(start, end + 1):
+        if is_prime(i):
+            count += 1
+            if count == n:
+                return i
+    return None
+
+# Extended Euclidean Algorithm
+def egcd(a, b):
+    if a == 0:
+        return b, 0, 1
+    g, y, x = egcd(b % a, a)
+    return g, x - (b // a) * y, y
+
+# Modular inverse
+def modinv(a, m):
+    g, x, _ = egcd(a, m)
+    if g != 1:
+        raise Exception("No modular inverse")
+    return x % m
 
 # Parameters
 START = 1000
 END = 10000
 P_INDEX = 10
 Q_INDEX = 19
-E = 65537  # Common public exponent
+E = 65537
 
 # Generate primes
 p = get_nth_prime_in_range(START, END, P_INDEX)
@@ -19,13 +56,11 @@ q = get_nth_prime_in_range(START, END, Q_INDEX)
 if p is None or q is None:
     raise ValueError("Could not find primes with specified indices.")
 
-# Calculate RSA components
 n = p * q
 phi = (p - 1) * (q - 1)
-
 d = modinv(E, phi)
 
-# Display Keys
+# Output keys
 print("RSA Key Generation Complete:")
 print(f"p = {p}")
 print(f"q = {q}")
