@@ -16,7 +16,7 @@ cipher = AESCipher(key)
 test_strings = [
     "Pony Up!",
     "Veritas liberabit vos",
-    "Subliminal message to give me an 'A'",
+    "Subliminal message to give Austin an 'A'",
     # Add or modify strings as needed
 ]
 
