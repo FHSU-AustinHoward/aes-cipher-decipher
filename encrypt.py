@@ -1,6 +1,6 @@
 # encrypt.py
 #
-# Script to encrypt plaintext strings using AES-128
+# Encrypts plaintext strings using AES-128
 
 from aes_cipher import AESCipher
 from utils import string_to_blocks, print_blocks

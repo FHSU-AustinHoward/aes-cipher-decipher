@@ -1,6 +1,6 @@
 # test_aes.py
 #
-# Basic demo to validate AES encryption/decryption functionality
+# Demonstration to validate AES encryption/decryption functionality
 
 from aes_cipher import AESCipher
 from utils import string_to_blocks, blocks_to_string, print_blocks

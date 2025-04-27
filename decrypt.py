@@ -1,6 +1,6 @@
 # decrypt.py
 #
-# Script to decrypt AES-128 ciphertext back into plaintext
+# Decrypts AES-128 ciphertext back into plaintext
 
 from aes_cipher import AESCipher
 from utils import blocks_to_string, print_blocks

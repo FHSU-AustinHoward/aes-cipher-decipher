@@ -1,6 +1,6 @@
 # aes_cipher.py
 #
-# AES-128 encryption and decryption using an object-oriented design.
+# Simulates AES-128 encryption and decryption
 #
 # Author: Austin Howard
 # Date: April 27, 2025
