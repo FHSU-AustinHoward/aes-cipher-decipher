@@ -1,6 +1,6 @@
 # rsa_attack.py
 #
-# Simulates an adversary recovering the private key d using exhaustive search
+# Simulates an adversary recovering the private key d using exhaustive search.
 
 import time
 from rsa_keygen import E, n, d  # For comparison only (d is not known to adversary)
