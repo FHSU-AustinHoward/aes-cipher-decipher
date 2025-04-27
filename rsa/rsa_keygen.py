@@ -10,7 +10,7 @@ START = 1000
 END = 10000
 P_INDEX = 10
 Q_INDEX = 19
-E = 65537  # Common public exponent (0x10001)
+E = 65537  # Common public exponent
 
 # Generate primes
 p = get_nth_prime_in_range(START, END, P_INDEX)
