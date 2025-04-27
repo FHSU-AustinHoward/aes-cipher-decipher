@@ -47,7 +47,7 @@ START = 1000
 END = 10000
 P_INDEX = 10
 Q_INDEX = 19
-E = 65537
+E = 65537 # A common exponent for RSA (0x10001)
 
 # Generate primes
 p = get_nth_prime_in_range(START, END, P_INDEX)
