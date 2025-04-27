@@ -1,29 +1,31 @@
 # rsa_attack.py
 #
-# Brute-force recovery of d given only public key {e, n}
-
-import time
+# Simulates an attacker recovering the private key d via brute-force
 
 # Public key
-e = 65537
-n = 1185137  # use actual n from your keygen script
+E = 65537
+n = 1185137
 
-# Ciphertext for "r" encrypted: assume c = m^e mod n with m = 17
-target_plaintext = 17
-ciphertext = 665120  # known ciphertext for 'r' using the above n and e
+# Known ciphertext of "rsa" encrypted with e and n
+ciphertext = [665120, 1081927, 0]  # encrypted values of 'r', 's', 'a'
+expected_plaintext = [17, 18, 0]   # letter-to-number mapping
+
+import time
 
 start = time.time()
 recovered_d = None
 
+# Try all possible d values
 for guess_d in range(2, n):
-    if pow(ciphertext, guess_d, n) == target_plaintext:
+    decrypted = [pow(c, guess_d, n) for c in ciphertext]
+    if decrypted == expected_plaintext:
         recovered_d = guess_d
         break
 
 elapsed = time.time() - start
 
 if recovered_d:
-    print("[*] Recovered d:", recovered_d)
+    print("[*] Recovered private key d:", recovered_d)
     print(f"[*] Elapsed time: {elapsed:.4f} seconds")
 else:
     print("[!] Failed to recover d")
