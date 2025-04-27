@@ -56,15 +56,15 @@ q = get_nth_prime_in_range(START, END, Q_INDEX)
 if p is None or q is None:
     raise ValueError("Could not find primes with specified indices.")
 
-n = p * q
-phi = (p - 1) * (q - 1)
-d = modinv(E, phi)
+n = p * q                   # Modulus for public and private keys
+phi = (p - 1) * (q - 1)     # Euler's totient function
+d = modinv(E, phi)          # Private exponent such that (e * d) % phi == 1
 
 # Output keys
 print("RSA Key Generation Complete:")
-print(f"p = {p}")
-print(f"q = {q}")
-print(f"n = {n}")
-print(f"phi = {phi}")
-print(f"Public Key (e, n) = ({E}, {n})")
-print(f"Private Key (d, p, q) = ({d}, {p}, {q})")
+print(f"10th Prime:               p = {p}")
+print(f"19th Prime:               q = {q}")
+print(f"Modulus:                  n = {n}")
+print(f"Euler's Totient:        phi = {phi}")
+print(f"Public Key:            e, n = ({E}, {n})")
+print(f"Private Key:        d, p, q = ({d}, {p}, {q})")
