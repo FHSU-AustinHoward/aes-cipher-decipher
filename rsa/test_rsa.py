@@ -4,6 +4,7 @@
 
 from rsa_keygen import p, q, n, E, d
 from rsa_utils import map_text_to_numbers, map_numbers_to_text
+import time
 
 # Message setup
 message = "rsa"
@@ -24,3 +25,22 @@ print(f"Ciphertext nums:  {ciphertext_numbers}")
 print(f"Decrypted nums:   {decrypted_numbers}")
 print(f"Recovered text:   {recovered_message}")
 print("[ MATCH ]" if recovered_message == message else "[ MISMATCH ]")
+
+# Attacker simulation
+print("\n=== ATTACKER SIMULATION (EXHAUSTIVE SEARCH) ===")
+start_time = time.time()
+recovered_d = None
+
+for guess_d in range(2, n):
+    if pow(ciphertext_numbers[0], guess_d, n) == plaintext_numbers[0]:
+        recovered_d = guess_d
+        break
+
+elapsed = time.time() - start_time
+
+if recovered_d:
+    print(f"[*] Recovered d: {recovered_d}")
+    print(f"[*] Elapsed time: {elapsed:.4f} seconds")
+    print("[ MATCH ]" if recovered_d == d else "[ MISMATCH ]")
+else:
+    print("[!] Failed to recover d via brute-force")
