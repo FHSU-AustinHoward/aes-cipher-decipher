@@ -5,6 +5,9 @@
 # Author: Austin Howard
 # Date: April 27, 2025
 
+### LOOKUP TABLES FOR AES OPERATIONS ###
+
+# Forward S-box
 s_box = [
     # 0     1      2      3     4     5     6     7     8     9     A     B     C     D     E     F
     0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
@@ -25,10 +28,12 @@ s_box = [
     0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16,
 ]
 
+# Inverse S-Box
 inv_s_box = [0] * 256
 for i, val in enumerate(s_box):
     inv_s_box[val] = i
 
+# Round constants for key expansion
 r_con = [
     [0x01, 0x00, 0x00, 0x00],
     [0x02, 0x00, 0x00, 0x00],
@@ -42,8 +47,10 @@ r_con = [
     [0x36, 0x00, 0x00, 0x00],
 ]
 
+### CLASS IMPLEMENTATION ###
 class AESCipher:
     def __init__(self, key):
+        # Initialize AES to have 128-bit key
         assert len(key) == 16
         self.key = key
         self.round_keys = self.key_expansion()
@@ -55,18 +62,21 @@ class AESCipher:
         return [inv_s_box[b] for b in state]
 
     def shift_rows(self, state):
+        # Convert to 4x4 matrix, shift each row, flatten back results
         matrix = [state[i::4] for i in range(4)]
         for i in range(4):
             matrix[i] = matrix[i][i:] + matrix[i][:i]
         return [matrix[i][j] for j in range(4) for i in range(4)]
 
     def inv_shift_rows(self, state):
+        # Reverse the shifted rows
         matrix = [state[i::4] for i in range(4)]
         for i in range(4):
             matrix[i] = matrix[i][-i:] + matrix[i][:-i]
         return [matrix[i][j] for j in range(4) for i in range(4)]
 
     def gmul(self, a, b):
+        # Multiply two bytes using Galois Field multiplication (2^8)
         p = 0
         for _ in range(8):
             if b & 1:
@@ -79,6 +89,7 @@ class AESCipher:
         return p
 
     def mix_columns(self, state):
+        # Use column mixing on 4-byte columns
         result = []
         for col in range(4):
             i = col * 4
@@ -91,6 +102,7 @@ class AESCipher:
         return result
 
     def inv_mix_columns(self, state):
+        # Reverse the MixColumns function
         result = []
         for col in range(4):
             i = col * 4
@@ -102,6 +114,7 @@ class AESCipher:
             result += [r0, r1, r2, r3]
         return result
 
+    # Round Key and Key Expansion Utilities
     def add_round_key(self, state, round_key):
         return [b ^ k for b, k in zip(state, round_key)]
 
@@ -114,7 +127,9 @@ class AESCipher:
     def xor_words(self, a, b):
         return [i ^ j for i, j in zip(a, b)]
 
+    # AES-128 Expansion
     def key_expansion(self):
+        # Generate 11 round keys for AES-128
         w = [self.key[i:i+4] for i in range(0, 16, 4)]
         for i in range(4, 44):
             temp = w[i - 1].copy()
@@ -123,6 +138,7 @@ class AESCipher:
             w.append(self.xor_words(w[i - 4], temp))
         return [sum(w[4*i:4*i+4], []) for i in range(11)]
 
+    # Encrypt a single 16-byte block
     def encrypt_block(self, plaintext):
         assert len(plaintext) == 16
         state = self.add_round_key(plaintext, self.round_keys[0])
@@ -131,11 +147,14 @@ class AESCipher:
             state = self.shift_rows(state)
             state = self.mix_columns(state)
             state = self.add_round_key(state, self.round_keys[round_num])
+
+        # Final Round does not mix the columns
         state = self.sub_bytes(state)
         state = self.shift_rows(state)
         state = self.add_round_key(state, self.round_keys[10])
         return state
 
+    # Decrypt a single 16-byte block
     def decrypt_block(self, ciphertext):
         assert len(ciphertext) == 16
         state = self.add_round_key(ciphertext, self.round_keys[10])
@@ -144,6 +163,8 @@ class AESCipher:
             state = self.inv_sub_bytes(state)
             state = self.add_round_key(state, self.round_keys[round_num])
             state = self.inv_mix_columns(state)
+
+        # Final inverse round
         state = self.inv_shift_rows(state)
         state = self.inv_sub_bytes(state)
         state = self.add_round_key(state, self.round_keys[0])
